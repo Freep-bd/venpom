@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>BIO • venpom</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(145deg, #0a0012 0%, #14001f 100%);
+      color: #f0e8ff;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    #bg-video {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+      filter: brightness(0.45) contrast(1.12) saturate(1.05);
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.68);
+      z-index: -1;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      padding: 56px 16px 100px;
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      padding: 32px 20px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.45);
+    }
+
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .avatar-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 120px;
+      height: 120px;
+    }
+
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 32%;
+      border: 2.5px solid rgba(120, 200, 255, 0.45);
+      object-fit: cover;
+      z-index: 2;
+    }
+
+    .avatar-glow {
+      position: absolute;
+      inset: -12px;
+      background: radial-gradient(circle at 30% 30%, rgba(120, 200, 255, 0.45), transparent 70%);
+      border-radius: 40%;
+      z-index: 1;
+      animation: pulseGlow 3.2s infinite ease-in-out;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.55; transform: scale(1); }
+      50%      { opacity: 0.85; transform: scale(1.12); }
+    }
+
+    .status-pill {
+      background: rgba(20, 10, 30, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(120, 200, 255, 0.28);
+      border-radius: 40px;
+      padding: 6px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.88rem;
+      width: fit-content;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #00ff88;
+      box-shadow: 0 0 12px #00ff88;
+    }
+
+    .status-text {
+      color: #e0d0ff;
+      font-weight: 500;
+    }
+
+    .status-activity {
+      color: #b0a0ff;
+      font-size: 0.82rem;
+      max-width: 220px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .socials-and-player {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .socials {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .social-btn {
+      background: rgba(0, 120, 255, 0.08);
+      border: 1px solid rgba(120, 200, 255, 0.4);
+      border-radius: 999px;
+      padding: 8px 18px;
+      color: #e0d0ff;
+      font-weight: 500;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .social-btn:hover {
+      background: rgba(0, 120, 255, 0.35);
+      border-color: rgba(120, 200, 255, 0.6);
+      color: #f0e0ff;
+      transform: translateY(-1.5px);
+    }
+
+    .social-logo {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+      filter: brightness(0.95);
+    }
+
+    .player {
+      background: rgba(0, 120, 255, 0.08);
+      border: 1px solid rgba(120, 200, 255, 0.3);
+      border-radius: 16px;
+      padding: 16px 18px;
+      backdrop-filter: blur(20px);
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .track-title {
+      color: rgba(200, 220, 255, 0.92);
+      font-size: 1.1rem;
+      font-weight: 500;
+      text-align: center;
+      margin-bottom: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .player-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .btn {
+      background: rgba(0, 120, 255, 0.3);
+      border: none;
+      color: rgba(200, 220, 255, 0.95);
+      font-size: 1.5rem;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      flex-shrink: 0;
+    }
+
+    .btn:hover {
+      background: rgba(0, 120, 255, 0.5);
+      color: white;
+      transform: scale(1.1);
+    }
+
+    .btn.play-pause {
+      width: 64px;
+      height: 64px;
+      font-size: 1.9rem;
+      background: rgba(0, 120, 255, 0.4);
+    }
+
+    .progress-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 100px;
+    }
+
+    .progress-bar {
+      flex: 1;
+      height: 6px;
+      background: rgba(120, 200, 255, 0.20);
+      border-radius: 3px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(to right, #78b0ff, #80a0ff, #80c0ff);
+      border-radius: 3px;
+      transition: width 0.08s linear;
+    }
+
+    .time {
+      font-size: 0.86rem;
+      color: rgba(180, 200, 255, 0.9);
+      min-width: 42px;
+      text-align: center;
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      text-align: center;
+      margin: 40px 0 20px;
+      background: linear-gradient(90deg, #3563fc, #70b0ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .skills {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .skill {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 16px;
+      padding: 20px 16px;
+      border: 1px solid rgba(120, 200, 255, 0.14);
+      text-align: center;
+      transition: all 0.24s ease;
+    }
+
+    .skill:hover {
+      background: rgba(255, 255, 255, 0.055);
+      transform: translateY(-3px);
+    }
+
+    .skill.skill-cs2:hover {
+      border-color: #f5821f;
+      box-shadow: 0 10px 28px rgba(245, 130, 31, 0.5);
+    }
+    .skill.skill-cs2:hover .game-icon {
+      filter: drop-shadow(0 0 8px #f5821f);
+    }
+
+    .skill.skill-fortnite:hover {
+      border-color: #398ef0;
+      box-shadow: 0 10px 28px rgba(57, 142, 240, 0.5);
+    }
+    .skill.skill-fortnite:hover .game-icon {
+      filter: drop-shadow(0 0 8px #398ef0);
+    }
+
+    .skill.skill-gta5:hover {
+      border-color: #39b621;
+      box-shadow: 0 10px 28px rgba(65, 232, 65, 0.5);
+    }
+    .skill.skill-gta5:hover .game-icon {
+      filter: drop-shadow(0 0 8px #41e86b);
+    }
+
+    .skill.skill-hl2:hover {
+      border-color: #f07d00;
+      box-shadow: 0 10px 28px rgba(240, 125, 0, 0.5);
+    }
+    .skill.skill-hl2:hover .game-icon {
+      filter: drop-shadow(0 0 8px #f07d00);
+    }
+
+    .skill.skill-hl1:hover {
+      border-color: #f39c12;
+      box-shadow: 0 10px 28px rgba(243, 156, 18, 0.5);
+    }
+    .skill.skill-hl1:hover .game-icon {
+      filter: drop-shadow(0 0 8px #f39c12);
+    }
+
+    .skill.skill-portal2:hover {
+      border-color: #00a8ff;
+      box-shadow: 0 10px 28px rgba(0, 168, 255, 0.5);
+    }
+    .skill.skill-portal2:hover .game-icon {
+      filter: drop-shadow(0 0 8px #00a8ff);
+    }
+
+    .game-icon {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      margin-bottom: 12px;
+      filter: drop-shadow(0 0 8px rgba(120,200,255,0.5));
+      border-radius: 12px;
+      transition: filter 0.24s ease;
+    }
+
+    .skill b {
+      display: block;
+      font-size: 1.24rem;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .skill small {
+      opacity: 0.82;
+      font-size: 0.94rem;
+    }
+
+    .footer-credit {
+      text-align: center;
+      margin-top: 48px;
+      font-size: 0.78rem;
+      opacity: 0.5;
+      transition: opacity 0.2s ease;
+    }
+
+    .footer-credit:hover {
+      opacity: 0.85;
+    }
+
+    .footer-credit a {
+      color: #a0d0ff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer-credit a:hover {
+      text-decoration: underline;
+      color: #c0e0ff;
+    }
+
+    @media (min-width: 721px) {
+      .container          { padding: 80px 32px 140px; }
+      .card               { padding: 48px 40px; border-radius: 24px; }
+      .header             { flex-direction: row; justify-content: space-between; text-align: left; align-items: flex-start; gap: 32px; }
+      .avatar-wrapper     { width: 140px; height: 140px; }
+      .avatar             { width: 140px; height: 140px; }
+      .socials-and-player { align-items: flex-end; }
+      .socials            { justify-content: flex-end; }
+      .skills             { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+      .skill b            { font-size: 1.3rem; }
+      .player             { max-width: 460px; }
+      .btn.play-pause     { font-size: 2.1rem; }
+      .footer-credit      { margin-top: 64px; font-size: 0.82rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <video id="bg-video" autoplay loop muted playsinline></video>
+  <div class="overlay"></div>
+
+  <div class="container">
+    <div class="card">
+
+      <div class="header">
+        <div class="avatar-section">
+          <div class="avatar-wrapper">
+            <img src="avatar.png" alt="venpom" class="avatar">
+            <div class="avatar-glow"></div>
+          </div>
+          <div class="status-pill">
+            <span class="status-dot"></span>
+            <span class="status-text" id="discord-username">venpom</span>
+            <span class="status-activity" id="discord-activity-text">Отдыхаю</span>
+          </div>
+        </div>
+
+        <div class="socials-and-player">
+          <div class="socials">
+            <a href="https://t.me/venpom_at" class="social-btn">
+              <img src="telegram.png" alt="Telegram" class="social-logo">
+              Telegram
+            <a href="https://steamcommunity.com/profiles/76561199813305333/" class="social-btn">
+              <img src="steam.png" alt="Steam" class="social-logo">
+              Steam
+            </a>
+            <a href="https://www.tiktok.com/@venpom_?_r=1&_t=ZP-94T6I2FKv6t" class="social-btn">
+              <img src="tiktok.png" alt="TikTok" class="social-logo">
+              TikTok
+            </a>
+          </div>
+
+          <div class="player">
+            <div class="track-title" id="trackTitle">Загрузка...</div>
+            <div class="player-main">
+              <button class="btn prev">⏮</button>
+              <div class="progress-container">
+                <span class="time" id="currentTime">0:00</span>
+                <div class="progress-bar" id="progressBar">
+                  <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <span class="time" id="duration">0:00</span>
+              </div>
+              <button class="btn play-pause" id="playPauseBtn">▶</button>
+              <button class="btn next">⏭</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Mʏ ғᴀᴠᴏʀɪᴛᴇ ɢᴀᴍᴇs</div>
+
+      <div class="skills">
+        <div class="skill skill-cs2">
+          <img class="game-icon" src="cs.png" alt="CS">
+          <b>Counter-Strike 2</b>
+        </div>
+        <div class="skill skill-fortnite">
+          <img class="game-icon" src="fort.png" alt="Fortnite">
+          <b>Fortnite</b>
+        </div>
+        <div class="skill skill-gta5">
+          <img class="game-icon" src="gta.png" alt="GTA 5">
+          <b>GTA 5</b>
+        </div>
+        <div class="skill skill-hl2">
+          <img class="game-icon" src="hl2.png" alt="Half-Life 2">
+          <b>Half-Life 2</b>
+        </div>
+        <div class="skill skill-hl1">
+          <img class="game-icon" src="hl1.png" alt="Half-Life 1">
+          <b>Half-Life 1</b>
+        </div>
+        <div class="skill skill-portal2">
+          <img class="game-icon" src="portal2.png" alt="Portal 2">
+          <b>Portal 2</b>
+        </div>
+      </div>
+
+      <div class="footer-credit">
+        codded by <a href="https://github.com/Freep-bd" target="_blank">Freep</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const backgroundVideos = [
+      "movies/1.mp4", "movies/2.mp4"
+    ];
+    const randomVideo = backgroundVideos[Math.floor(Math.random() * backgroundVideos.length)];
+    const videoElement = document.getElementById("bg-video");
+    const vidSource = document.createElement("source");
+    vidSource.src = randomVideo;
+    vidSource.type = "video/mp4";
+    videoElement.appendChild(vidSource);
+    videoElement.load();
+    videoElement.play().catch(e => console.log("Видео заблокировано:", e));
+
+    const musicTracks = [
+      "music/Последний звонок — KSB music.mp3",
+      "music/Другая — Нервы.mp3",
+      "music/Фонарь — Ночь. Улица.mp3",
+      "music/Разница — Какая.mp3",
+    ];
+
+    const trackTitle     = document.getElementById("trackTitle");
+    const playPauseBtn   = document.getElementById("playPauseBtn");
+    const prevBtn        = document.querySelector(".prev");
+    const nextBtn        = document.querySelector(".next");
+    const progressFill   = document.getElementById("progressFill");
+    const currentTimeEl  = document.getElementById("currentTime");
+    const durationEl     = document.getElementById("duration");
+    const progressBar    = document.getElementById("progressBar");
+
+    let currentTrackIndex = 0;
+    const audio = new Audio();
+
+    function formatTime(seconds) {
+      if (!seconds || isNaN(seconds)) return "0:00";
+      const min = Math.floor(seconds / 60);
+      const sec = Math.floor(seconds % 60);
+      return `${min}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    function loadAndPlay(index) {
+      if (index < 0 || index >= musicTracks.length) return;
+      currentTrackIndex = index;
+      const filePath = musicTracks[index];
+      const name = filePath.split('/').pop().replace(/\.[^/.]+$/, "");
+      trackTitle.textContent = name;
+
+      audio.src = filePath;
+      audio.load();
+      audio.play().catch(() => {});
+      playPauseBtn.textContent = '❚❚';
+    }
+
+    function togglePlay() {
+      if (audio.paused) {
+        audio.play();
+        playPauseBtn.textContent = '❚❚';
+      } else {
+        audio.pause();
+        playPauseBtn.textContent = '▶';
+      }
+    }
+
+    function updateProgress() {
+      if (!audio.duration) return;
+      const percent = (audio.currentTime / audio.duration) * 100;
+      progressFill.style.width = percent + '%';
+      currentTimeEl.textContent = formatTime(audio.currentTime);
+      durationEl.textContent = formatTime(audio.duration);
+    }
+
+    playPauseBtn.addEventListener("click", togglePlay);
+
+    prevBtn.addEventListener("click", () => {
+      currentTrackIndex = (currentTrackIndex - 1 + musicTracks.length) % musicTracks.length;
+      loadAndPlay(currentTrackIndex);
+    });
+
+    nextBtn.addEventListener("click", () => {
+      currentTrackIndex = (currentTrackIndex + 1) % musicTracks.length;
+      loadAndPlay(currentTrackIndex);
+    });
+
+    audio.addEventListener("timeupdate", updateProgress);
+    audio.addEventListener("ended", () => {
+      currentTrackIndex = (currentTrackIndex + 1) % musicTracks.length;
+      loadAndPlay(currentTrackIndex);
+    });
+
+    progressBar.addEventListener("click", e => {
+      const rect = progressBar.getBoundingClientRect();
+      const pos = (e.clientX - rect.left) / rect.width;
+      audio.currentTime = pos * audio.duration;
+    });
+
+    if (musicTracks.length > 0) {
+      currentTrackIndex = Math.floor(Math.random() * musicTracks.length);
+      loadAndPlay(currentTrackIndex);
+    }
+
+    const DISCORD_USER_ID = '1474768669329330219';
+
+    async function fetchDiscordStatus() {
+      try {
+        const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
+        const data = await res.json();
+        if (data.success) updateDiscordStatus(data.data);
+      } catch (err) {
+        console.error('Discord status error:', err);
+        document.getElementById('discord-activity-text').innerText = 'Ошибка';
+      }
+    }
+
+    function updateDiscordStatus(d) {
+      const dot = document.querySelector('.status-dot');
+      const colors = {
+        online:  '#00ff88',
+        idle:    '#faa61a',
+        dnd:     '#f04747',
+        offline: '#747f8d'
+      };
+      const status = d.discord_status || 'offline';
+      const color = colors[status] || '#747f8d';
+      dot.style.background = color;
+      dot.style.boxShadow = `0 0 12px ${color}`;
+
+      document.getElementById('discord-username').innerText = d.discord_user.username;
+
+      const actText = document.getElementById('discord-activity-text');
+
+      if (status === 'offline') {
+        actText.innerText = 'Сплю';
+        return;
+      }
+
+      const game = d.activities?.find(a => a.type === 0);
+      if (game && game.name) {
+        actText.innerText = `🎮 ${game.name}`;
+        return;
+      }
+
+      actText.innerText = 'Отдыхаю';
+    }
+
+    fetchDiscordStatus();
+    setInterval(fetchDiscordStatus, 15000);
+  </script>
+
+</body>
+</html>
